@@ -183,8 +183,6 @@
 <script>
 import MetaMaskOnboarding from "@metamask/onboarding";
 
-import contractAbi from "../../../build/contracts/EthVault.json";
-
 import VaultCard from "./VaultCard.vue";
 
 export default {
@@ -206,7 +204,6 @@ export default {
     modal: false,
 
     userVaults: [],
-    contractAbi: contractAbi,
 
     metamaskInstalled: Boolean,
     onBoardingButtonDisabeld: false,
