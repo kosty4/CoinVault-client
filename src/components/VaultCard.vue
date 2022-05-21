@@ -4,7 +4,7 @@
 
     <v-card-text align="left" class="my-2">
       <v-row class="mx-1"
-        ><p>Deposited: {{ this.vaultDepositEth }} {{ this.$store.state.token }}</p></v-row
+        ><p>Deposited: {{ this.vaultDepositedEther }} {{ this.$store.state.contractNativeToken }}</p></v-row
       >
       <v-row v-if="this.secondsToUnlock() > 0" class="mx-1">
         <p>Time to release: {{ this.daysToUnlock(true) }} days</p>
@@ -35,7 +35,7 @@
                 <div>
                   <p>
                     Note: You wont be able to access your tokens until
-                    23-03-2022
+                    23-03-2022 TODO
                   </p>
                 </div>
 
@@ -50,7 +50,7 @@
                         solo
                       ></v-text-field>
                     </v-col>
-                    <v-col cols="3" class="mt-2"><p>{{ this.$store.state.token }}</p></v-col>
+                    <v-col cols="3" class="mt-2"><p>{{ this.$store.state.contractNativeToken }}</p></v-col>
                   </v-row>
                 </div>
               </v-card-text>
@@ -64,7 +64,7 @@
                 <v-btn
                   color="green darken-1"
                   text
-                  @click="addToVault(depositAmount)"
+                  @click="addToVaultNative(depositAmount)"
                 >
                   Send
                 </v-btn>
@@ -80,7 +80,7 @@
 
             color="success"
             :disabled="!withdrawAvailable"
-            @click="withdrawFromVault()"
+            @click="withdrawNative()"
           >
             Withdraw
           </v-btn>
@@ -101,7 +101,7 @@ export default {
   }),
   props: {
     vaultName: String,
-    vaultDeposit: Number,
+    vaultNativeBallance: Number,
     vaultMaturity: Number,
     vaultID: Number,
   },
@@ -130,13 +130,13 @@ export default {
       return days;
     },
 
-    async getVaults() {
-      return await this.$store.state.contract.get();
+    async getUserVaults() {
+      return await this.$store.state.contract.getUserVaults();
     },
 
-    async addToVault(depositAmount) {
+    async addToVaultNative(depositAmount) {
       this.dialog = false;
-
+    
       console.log("number of days ", this.daysToUnlock());
 
       // const signer = this.$store.state.provider.getSigner();
@@ -146,35 +146,45 @@ export default {
       };
 
       await this.$store.state.contract
-        .addToVault(this.vaultID, overrideOptions)
+        .depositNative(this.vaultID, overrideOptions)
         .then(console.log("ok"));
-
-      this.userVaults = this.getVaults();
+        //TODO add event to update the UI ballance
+      this.userVaults = this.getUserVaults();
     },
 
-    async withdrawFromVault() {
+    async withdrawNative() {
       await this.$store.state.contract
-        .withdrawFromVault(this.vaultID)
+        .withdrawNative(this.vaultID)
         .then(console.log("ok"));
     },
 
-    // computed: {
-    //   // timeToRelease: function(){
-    //   //     this.daysToUnlock(true)
-    //   // }
+    // TODO
+    async depositToken() {
+      await this.$store.state.contract
+        .depositToken(this.vaultID, 100)
+        .then(console.log("ok"));
+    },
+
+    // TODO
+    async withdrawToken() {
+      await this.$store.state.contract
+        .withdrawToken(this.vaultID, 100)
+        .then(console.log("ok"));
+    },
+
+
+
+    // async getTokenBallance(tokenID) {
+    //   await this.$store.state.contract
+    //     .getTokenBallanceInVault(this.vaultID, tokenID)
+    //     .then(console.log("ok"));
     // },
 
-    // remainingHours(){
-    //           let minutes = timedifference / 60;
-    //   let hours = minutes / 60;
-    //   let days = hours / 24;
 
-    //   console.log("days", days);
-    // }
   },
   computed: {
-    vaultDepositEth() {
-      let cval = this.vaultDeposit.toString();
+    vaultDepositedEther() {
+      let cval = this.vaultNativeBallance.toString();
       return Web3.utils.fromWei(cval, "ether");
     },
     withdrawAvailable() {

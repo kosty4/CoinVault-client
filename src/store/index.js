@@ -1,24 +1,22 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import {getWallet, getContract} from '../utils/getWeb3'
+import {getWallet, getContract, getTokenInterface} from '../utils/getWeb3'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    firstName: 'John',
-    lastName: 'Doe',
     accountWithWallets: null,
     provider: null,
     contract: null,
-    token: null,
+    contractNativeToken: null,
   },
   mutations: {
     setAccounts(state, payload) {
       state.accountWithWallets = payload[0]
       state.provider = payload[1]
-      state.token = payload[2]
+      state.contractNativeToken = payload[2]
     },
     setContract(state, payload) {
       state.contract = payload
@@ -43,7 +41,17 @@ export default new Vuex.Store({
         .catch((e) => {
           console.log('error in registering contract', e)
         })
-    }
+    },
+    // register multiple token interfaces on demand
+    async registerTokenContract({ commit }) {
+      await getTokenInterface('BTCB')
+        .then((result) => {
+          commit('setContract', result)
+        })
+        .catch((e) => {
+          console.log('error in registering contract', e)
+        })
+    },
   },
   getters: {},
   modules: {},

@@ -3,7 +3,7 @@
     <v-app-bar app>
       <!-- -->
       <div class="d-flex align-center ma-3">
-        <h2>EthVault</h2>
+        <h2>CoinVault</h2>
       </div>
 
       <template v-slot:extension>
@@ -72,10 +72,10 @@
                   <vault-card
                     v-for="(item, index) in userVaults"
                     :key="`${rerenderList}-${index}`"
-                    :vaultDeposit="parseFloat(userVaults[index][0])"
-                    :vaultMaturity="parseFloat(userVaults[index][1])"
-                    :vaultName="userVaults[index][4]"
                     :vaultID="index"
+                    :vaultMaturity="parseFloat(userVaults[index][1])"
+                    :vaultNativeBallance="parseFloat(userVaults[index][2])"
+                    :vaultName="userVaults[index][4]"
                   />
                 </div>
               </v-tab-item>
@@ -135,7 +135,7 @@
                               </v-dialog>
                             </div>
                             <v-btn
-                              v-on:click="createVault"
+                              v-on:click="createNewVault"
                               color="success"
                               dark
                               class="mt-6"
@@ -223,8 +223,8 @@ export default {
       onboarding.startOnboarding();
     },
 
-    async getVaults() {
-      return await this.$store.state.contract.get();
+    async getUserVaults() {
+      return await this.$store.state.contract.getUserVaults();
     },
 
     async connectToWallet() {
@@ -235,11 +235,12 @@ export default {
       this.metamaskConnected = true;
       this.snackbar = true;
       //Get user created vaults
-      this.userVaults = await this.getVaults();
+      this.userVaults = await this.getUserVaults();
       this.forceRerender();
     },
 
-    async createVault() {
+    //create New Vault with a certain maturity
+    async createNewVault() {
       let newVaultMaturity = new Date(this.newVaultDate).getTime() / 1000;
       let currentTime = new Date().getTime() / 1000;
 
@@ -251,7 +252,7 @@ export default {
 
       await newVaultTx.wait();
 
-      this.userVaults = await this.getVaults();
+      this.userVaults = await this.getUserVaults();
       this.forceRerender();
     },
 
