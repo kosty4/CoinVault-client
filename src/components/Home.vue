@@ -6,6 +6,7 @@
         <h2>CoinVault</h2>
       </div>
 
+
       <template v-slot:extension>
         <v-tabs
           v-model="selectedTab"
@@ -23,6 +24,13 @@
       <v-spacer></v-spacer>
       <v-footer class="mt-3">
         <v-row justify="center" no-gutters>
+          <v-chip class="mx-4" disabled>{{chainName}}</v-chip>
+          <!-- <v-btn text rounded v-on:click="connectToWallet">
+            
+            Connect
+          </v-btn> -->
+
+
           <template v-if="!metamaskInstalled">
             <v-btn
               class="mx-3"
@@ -72,9 +80,11 @@
                   <vault-card
                     v-for="(item, index) in userVaults"
                     :key="`${rerenderList}-${index}`"
-                    :vaultID="index"
+                    :vaultIX="index"
+                    :vaultUID="parseFloat(userVaults[index][0])"
                     :vaultMaturity="parseFloat(userVaults[index][1])"
                     :vaultNativeBallance="parseFloat(userVaults[index][2])"
+                    :depositDisabled="userVaults[index][3]"
                     :vaultName="userVaults[index][4]"
                   />
                 </div>
@@ -154,7 +164,7 @@
         </v-row>
 
         <v-snackbar
-          v-model="snackbar"
+          v-model="showConnectedWalletSnackbar"
           bottom
           color="success"
           outlined
@@ -165,7 +175,13 @@
           Connected to Matamask!
 
           <template v-slot:action="{ attrs }">
-            <v-btn text v-bind="attrs" @click="snackbar = false"> Close </v-btn>
+            <v-btn
+              text
+              v-bind="attrs"
+              @click="showConnectedWalletSnackbar = false"
+            >
+              Close
+            </v-btn>
           </template>
         </v-snackbar>
 
@@ -185,11 +201,12 @@ import MetaMaskOnboarding from "@metamask/onboarding";
 
 import VaultCard from "./VaultCard.vue";
 
+
 export default {
   name: "Home",
   data: () => ({
     selectedTab: "tab-1",
-    snackbar: false,
+    showConnectedWalletSnackbar: false,
 
     activePicker: null,
     newVaultDate: null,
@@ -204,6 +221,8 @@ export default {
     modal: false,
 
     userVaults: [],
+
+    chainName: "...",
 
     metamaskInstalled: Boolean,
     onBoardingButtonDisabeld: false,
@@ -228,15 +247,33 @@ export default {
     },
 
     async connectToWallet() {
-
       await this.$store.dispatch("registerWeb3");
       await this.$store.dispatch("registerContract");
 
       this.metamaskConnected = true;
-      this.snackbar = true;
+      this.showConnectedWalletSnackbar = true;
+
       //Get user created vaults
-      this.userVaults = await this.getUserVaults();
-      this.forceRerender();
+      try {
+        this.userVaults = await this.getUserVaults();
+      } catch (error) {
+        console.log('User does not have vaults'); // "Uh-oh!"
+      }
+
+      if (this.userVaults.length > 0) {
+        this.forceRerender();
+        this.selectedTab = "tab-0";
+      }
+      let chains = 
+      {
+        'MATIC':'Polygon',
+        'BNB':'BSC',
+        'AVAX':'Avalanche',
+        'ETH':'Ethereum',
+      };
+
+      this.chainName = chains[this.$store.state.contractNativeToken];
+
     },
 
     //create New Vault with a certain maturity
@@ -247,13 +284,29 @@ export default {
       let timedifference = newVaultMaturity - currentTime;
       timedifference = Math.round(timedifference);
 
-      const newVaultTx = await this.$store.state.contract
-        .createNewVault(timedifference, this.newVaultName);
+      const newVaultTx = await this.$store.state.contract.createNewVault(
+        timedifference,
+        this.newVaultName
+      );
 
       await newVaultTx.wait();
 
-      this.userVaults = await this.getUserVaults();
+
+      //Get user created vaults
+      try {
+        const timeout = setTimeout(() =>{
+          console.log('done')
+        },5000);
+
+        timeout.wait();
+
+        this.userVaults = await this.getUserVaults();
+      } catch (error) {
+        console.log('User does not have vaults'); // "Uh-oh!"
+      }
+
       this.forceRerender();
+      this.selectedTab = "tab-0";
     },
 
     saveDate(newVaultDate) {

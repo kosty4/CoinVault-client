@@ -1,29 +1,5 @@
 [
 	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint8",
-				"name": "tokenID",
-				"type": "uint8"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "ballance",
-				"type": "uint256"
-			}
-		],
-		"name": "LogVaultTokenToBallance",
-		"type": "event"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -64,7 +40,7 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "_userVaultID",
+				"name": "_userVaultIX",
 				"type": "uint256"
 			}
 		],
@@ -77,7 +53,7 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "_userVaultID",
+				"name": "_userVaultIX",
 				"type": "uint256"
 			},
 			{
@@ -92,6 +68,61 @@
 			}
 		],
 		"name": "depositToken",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint8",
+				"name": "tokenID",
+				"type": "uint8"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "ballance",
+				"type": "uint256"
+			}
+		],
+		"name": "LogVaultTokenToBallance",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_userVaultIX",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawNative",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_userVaultIX",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			}
+		],
+		"name": "withdrawToken",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -190,37 +221,6 @@
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "vaultID",
-				"type": "uint256"
-			}
-		],
-		"name": "withdrawNative",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "vaultID",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "withdrawToken",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]
