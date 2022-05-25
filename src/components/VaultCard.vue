@@ -61,7 +61,7 @@
                 <div>
                   <p>
                     Note: You wont be able to access your tokens until
-                    23-03-2022 TODO
+                    {{ new Date(vaultMaturity*1000) }}
                   </p>
                 </div>
 

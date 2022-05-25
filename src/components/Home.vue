@@ -24,7 +24,7 @@
       <v-spacer></v-spacer>
       <v-footer class="mt-3">
         <v-row justify="center" no-gutters>
-          <v-chip class="mx-4" disabled>{{chainName}}</v-chip>
+          <v-chip class="mx-4 mt-1" disabled >{{chainName}}</v-chip>
           <!-- <v-btn text rounded v-on:click="connectToWallet">
             
             Connect
