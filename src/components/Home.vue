@@ -3,8 +3,9 @@
     <v-app-bar app>
       <!-- -->
       <div class="d-flex align-center ma-3">
-        <h2>EthVault</h2>
+        <h2>CoinVault</h2>
       </div>
+
 
       <template v-slot:extension>
         <v-tabs
@@ -23,6 +24,13 @@
       <v-spacer></v-spacer>
       <v-footer class="mt-3">
         <v-row justify="center" no-gutters>
+          <v-chip class="mx-4 mt-1" disabled >{{chainName}}</v-chip>
+          <!-- <v-btn text rounded v-on:click="connectToWallet">
+            
+            Connect
+          </v-btn> -->
+
+
           <template v-if="!metamaskInstalled">
             <v-btn
               class="mx-3"
@@ -72,10 +80,12 @@
                   <vault-card
                     v-for="(item, index) in userVaults"
                     :key="`${rerenderList}-${index}`"
-                    :vaultDeposit="parseFloat(userVaults[index][0])"
+                    :vaultIX="index"
+                    :vaultUID="parseFloat(userVaults[index][0])"
                     :vaultMaturity="parseFloat(userVaults[index][1])"
+                    :vaultNativeBallance="parseFloat(userVaults[index][2])"
+                    :depositDisabled="userVaults[index][3]"
                     :vaultName="userVaults[index][4]"
-                    :vaultID="index"
                   />
                 </div>
               </v-tab-item>
@@ -135,7 +145,7 @@
                               </v-dialog>
                             </div>
                             <v-btn
-                              v-on:click="createVault"
+                              v-on:click="createNewVault"
                               color="success"
                               dark
                               class="mt-6"
@@ -154,7 +164,7 @@
         </v-row>
 
         <v-snackbar
-          v-model="snackbar"
+          v-model="showConnectedWalletSnackbar"
           bottom
           color="success"
           outlined
@@ -165,7 +175,13 @@
           Connected to Matamask!
 
           <template v-slot:action="{ attrs }">
-            <v-btn text v-bind="attrs" @click="snackbar = false"> Close </v-btn>
+            <v-btn
+              text
+              v-bind="attrs"
+              @click="showConnectedWalletSnackbar = false"
+            >
+              Close
+            </v-btn>
           </template>
         </v-snackbar>
 
@@ -185,11 +201,12 @@ import MetaMaskOnboarding from "@metamask/onboarding";
 
 import VaultCard from "./VaultCard.vue";
 
+
 export default {
   name: "Home",
   data: () => ({
     selectedTab: "tab-1",
-    snackbar: false,
+    showConnectedWalletSnackbar: false,
 
     activePicker: null,
     newVaultDate: null,
@@ -204,6 +221,8 @@ export default {
     modal: false,
 
     userVaults: [],
+
+    chainName: "...",
 
     metamaskInstalled: Boolean,
     onBoardingButtonDisabeld: false,
@@ -223,36 +242,71 @@ export default {
       onboarding.startOnboarding();
     },
 
-    async getVaults() {
-      return await this.$store.state.contract.get();
+    async getUserVaults() {
+      return await this.$store.state.contract.getUserVaults();
     },
 
     async connectToWallet() {
-
       await this.$store.dispatch("registerWeb3");
       await this.$store.dispatch("registerContract");
 
       this.metamaskConnected = true;
-      this.snackbar = true;
+      this.showConnectedWalletSnackbar = true;
+
       //Get user created vaults
-      this.userVaults = await this.getVaults();
-      this.forceRerender();
+      try {
+        this.userVaults = await this.getUserVaults();
+      } catch (error) {
+        console.log('User does not have vaults'); // "Uh-oh!"
+      }
+
+      if (this.userVaults.length > 0) {
+        this.forceRerender();
+        this.selectedTab = "tab-0";
+      }
+      let chains = 
+      {
+        'MATIC':'Polygon',
+        'BNB':'BSC',
+        'AVAX':'Avalanche',
+        'ETH':'Ethereum',
+      };
+
+      this.chainName = chains[this.$store.state.contractNativeToken];
+
     },
 
-    async createVault() {
+    //create New Vault with a certain maturity
+    async createNewVault() {
       let newVaultMaturity = new Date(this.newVaultDate).getTime() / 1000;
       let currentTime = new Date().getTime() / 1000;
 
       let timedifference = newVaultMaturity - currentTime;
       timedifference = Math.round(timedifference);
 
-      const newVaultTx = await this.$store.state.contract
-        .createNewVault(timedifference, this.newVaultName);
+      const newVaultTx = await this.$store.state.contract.createNewVault(
+        timedifference,
+        this.newVaultName
+      );
 
       await newVaultTx.wait();
 
-      this.userVaults = await this.getVaults();
+
+      //Get user created vaults
+      try {
+        const timeout = setTimeout(() =>{
+          console.log('done')
+        },5000);
+
+        timeout.wait();
+
+        this.userVaults = await this.getUserVaults();
+      } catch (error) {
+        console.log('User does not have vaults'); // "Uh-oh!"
+      }
+
       this.forceRerender();
+      this.selectedTab = "tab-0";
     },
 
     saveDate(newVaultDate) {
